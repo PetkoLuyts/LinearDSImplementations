@@ -2,6 +2,7 @@ package implementations;
 
 import interfaces.List;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 public class ArrayList<E> implements List<E> {
@@ -19,7 +20,7 @@ public class ArrayList<E> implements List<E> {
     @Override
     public boolean add(E element) {
         if (this.size == this.capacity) {
-            resize();
+            grow();
         }
 
         this.elements[size++] = element;
@@ -64,36 +65,57 @@ public class ArrayList<E> implements List<E> {
         Object elementToReturn = this.elements[index];
 
         shiftLeft(index);
+        this.size--;
+
+        shrinkIfNeeded();
 
         return (E) elementToReturn;
     }
 
     @Override
     public int size() {
-        return 0;
+        return this.size;
     }
 
     @Override
     public int indexOf(E element) {
-        return 0;
+        for (int i = 0; i < this.size; i++) {
+            if (this.elements[i].equals(element)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     @Override
     public boolean contains(E element) {
-        return false;
+        return this.indexOf(element) >= 0;
     }
 
     @Override
     public boolean isEmpty() {
-        return false;
+        return this.size == 0;
     }
 
     @Override
     public Iterator<E> iterator() {
-        return null;
+        return new Iterator<E>() {
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < size();
+            }
+
+            @Override
+            public E next() {
+                return get(index++);
+            }
+        };
     }
 
-    private void resize() {
+    private void grow() {
         this.capacity *= 2;
         Object[] tmp = new Object[this.capacity];
 
@@ -104,6 +126,15 @@ public class ArrayList<E> implements List<E> {
         this.elements = tmp;
     }
 
+    private void shrinkIfNeeded() {
+        if (this.size > this.capacity / 3) {
+            return;
+        }
+
+        this.capacity /= 2;
+        this.elements = Arrays.copyOf(this.elements, capacity);
+    }
+
     private void shiftRight(int index) {
         for (int i = this.size - 1; i >= index; i--) {
             this.elements[i + 1] = this.elements[i];
@@ -111,11 +142,13 @@ public class ArrayList<E> implements List<E> {
     }
 
     private void shiftLeft(int index) {
-        
+        for (int i = index; i < this.size - 1; i++) {
+            this.elements[i] = this.elements[i + 1];
+        }
     }
 
     private boolean validIndex(int index) {
-        return index >= 0 || index < this.size;
+        return index >= 0 && index < this.size;
     }
 
     private void ensureIndex(int index) {
