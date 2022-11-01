@@ -8,6 +8,7 @@ import java.util.Iterator;
 public class SinglyLinkedList<E> implements LinkedList<E> {
     private Node<E> head;
     private int size;
+
     private static class Node<E> {
         private E value;
         private Node<E> next;
